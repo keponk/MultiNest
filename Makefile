@@ -17,7 +17,7 @@ else
 $(warning "mpif90 not found, so will compile without MPI!")
 endif
 
-LAPACKLIB = -llapack
+LIBS = -llapack -lpthread
 
 NESTLIBDIR = ./
 
@@ -39,8 +39,13 @@ default: libnest3.a
 all: libnest3.a obj_detect eggboxC eggboxC++ gaussian gauss_shell \
 rosenbrock himmelblau ackley
  
-libnest3.so: $(NSOBJECTS) 
-	$(LINKLIB) -o $(LIBS) $@ $^ 
+ifeq ($(shell uname -s),Darwin)
+libnest3.so: $(NSOBJECTS)
+	echo g++ -dynamiclib -undefined suppress -flat_namespace $(LIBS) -o $@ $^ 
+else
+libnest3.so: $(NSOBJECTS)
+	$(LINKLIB) $(LIBS) -o $@ $^
+endif
  
 libnest3.a: $(NSOBJECTS) 
 	$(AR) $@ $^ 
