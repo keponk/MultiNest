@@ -106,6 +106,8 @@ int main(int argc, char *argv[])
 	// set the MultiNest sampling parameters
 	
 	
+	int IS = 0;					// do Nested Importance Sampling?
+	
 	int mmodal = 1;					// do mode separation?
 	
 	int ceff = 0;					// run in constant efficiency mode?
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
 	
 	double efr = 1.0;				// set the required efficiency
 	
-	double tol = 0.5;				// tol, defines the stopping criteria
+	double tol = 0.1;				// tol, defines the stopping criteria
 	
 	int ndims = 2;					// dimensionality (no. of free parameters)
 	
@@ -122,7 +124,7 @@ int main(int argc, char *argv[])
 	
 	int nClsPar = 2;				// no. of parameters to do mode separation on
 	
-	int updInt = 100;				// after how many iterations feedback is required & the output files should be updated
+	int updInt = 500;				// after how many iterations feedback is required & the output files should be updated
 							// note: posterior files are updated & dumper routine is called after every updInt*10 iterations
 	
 	double Ztol = -1E90;				// all the modes with logZ < Ztol are ignored
@@ -138,7 +140,7 @@ int main(int argc, char *argv[])
 	
 	int fb = 1;					// need feedback on standard output?
 	
-	int resume = 0;					// resume from a previous job?
+	int resume = 1;					// resume from a previous job?
 	
 	int outfile = 1;				// write output files?
 	
@@ -157,7 +159,7 @@ int main(int argc, char *argv[])
 	// calling MultiNest
 	
 	
-	run(mmodal, ceff, nlive, tol, efr, ndims, nPar, nClsPar, maxModes, updInt, Ztol, root, seed, pWrap, fb, resume, outfile, initMPI, 
+	run(IS, mmodal, ceff, nlive, tol, efr, ndims, nPar, nClsPar, maxModes, updInt, Ztol, root, seed, pWrap, fb, resume, outfile, initMPI, 
 	logZero, maxiter, LogLike, dumper, context);
 }
 

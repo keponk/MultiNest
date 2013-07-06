@@ -31,10 +31,14 @@ cmake_minimum_required(VERSION 2.8)
 FIND_PACKAGE(LAPACK REQUIRED)
 
 # If we are compiling with gfortran, add -ffree-line-length-none
-IF(CMAKE_COMPILER_IS_GNUFortran)
-    MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler option.")
-    LIST(APPEND CMAKE_Fortran_FLAGS "-ffree-line-length-none")
-ENDIF(CMAKE_COMPILER_IS_GNUFortran)
+foreach(lang C CXX Fortran)
+    if(CMAKE_${lang}_COMPILER_ID STREQUAL GNU)
+        MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler option.")
+        LIST(APPEND CMAKE_Fortran_FLAGS "-ffree-line-length-none")
+        break()
+    endif()
+endforeach()
+
 
 # Enable optimization.
 #LIST(APPEND CMAKE_Fortran_FLAGS "-O3")
@@ -65,6 +69,17 @@ FIND_PACKAGE(MPI)
 if(NOT MPI_Fortran_FOUND)
     MESSAGE(STATUS "MPI not found, only non-MPI MultiNest libraries will be built.")
 else()
+
+    set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    set(CMAKE_Fortran_COMPILE_FLAGS ${CMAKE_Fortran_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    set(CMAKE_Fortran_LINK_FLAGS ${CMAKE_Fortran_LINK_FLAGS} ${MPI_LINK_FLAGS})
+
+
+    include_directories(MPI_INCLUDE_PATH)
+
     ADD_LIBRARY(multinest_mpi_static STATIC ${MultiNest_SOURCE})
     SET_TARGET_PROPERTIES(multinest_mpi_static PROPERTIES LINKER_LANGUAGE Fortran VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest_mpi)
     TARGET_LINK_LIBRARIES(multinest_mpi_static ${LAPACK_LIBRARIES} ${MPI_Fortran_LIBRARIES})
@@ -141,7 +156,7 @@ INSTALL(FILES
     ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod 
     DESTINATION modules
 )
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/includes/multinest.h DESTINATION includes)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/include/multinest.h DESTINATION include)
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/CMakeModules/FindMultiNest.cmake DESTINATION CMakeModules)
 INSTALL(DIRECTORY
     ${CMAKE_SOURCE_DIR}/bin/chains
