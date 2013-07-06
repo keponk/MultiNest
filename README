@@ -1,8 +1,8 @@
-MultiNest v 2.17
+MultiNest v 2.18
 Farhan Feroz, Mike Hobson
 f.feroz@mrao.cam.ac.uk
 arXiv:0704.3704 & arXiv:0809.3437
-Released Mar 2012
+Released Aug 2012
 
 ---------------------------------------------------------------------------
 
@@ -12,18 +12,37 @@ Users are required to accept to the licence agreement given in LICENCE file.
 
 ---------------------------------------------------------------------------
 
-MultiNest library requires lapack library.
+Required Libraries:
 
-The code is MPI compatible. In order to disable the MPI parallelization, remove -DMPI compilation flag.
+MultiNest requires lapack.  To use MPI support, some MPI library must also be installed.
+The CMake compilation script will automatically find both libraries, or stop compilation
+if they are not found.
 
 ---------------------------------------------------------------------------
 
-gfortran compiler:
+Building and installing MultiNest CMake version:
 
-You might need to use the following flag while compiling MultiNest with gfortran compiler to remove the
-restriction imposed by gfortran on line length.
+Brian Kloppenborg has provided a CMake building enviornment which automatically builds MultiNest as both
+static and shared libraries with MPI enabled and disabled. The script will automatically detect lapack and
+any compiler quirks that needed to be manually configured in previous version of MultiNest.
 
--ffree-line-length-none
+The script is setup to do an out-of-source build which is invoked by:
+
+$ cd build
+$ cmake ..
+$ make
+
+This builds the libraries, binaries, and modules placing them in multinest/lib, multinest/bin, 
+and multinest/modules respectively.  The installer is invoked via:
+
+$ sudo make install
+
+which copies the libraries, headers, modules, and binaries to /usr/local/multinest by default.  
+If you wish to change the installation folder, edit the CMAKE_INSTALL_PREFIX in multinest/CMakeLists.txt
+and re-run "cmake .." before invoking the installer.
+
+After installation, add /usr/local/multinest (or whatever CMAKE_INSTALL_PREFIX was set to) to your PATH 
+variable.
 
 ---------------------------------------------------------------------------
 
@@ -63,10 +82,12 @@ integer context									!not required by MultiNest, any additional information u
 
 likelihood routine: slikelihood(Cube,ndims,nPar,lnew,context)
 
-Cube(1:nPar) has nonphysical parameters
+Cube(1:nPar) has nonphysical parameters.
+
 scale Cube(1:n_dim) & return the scaled parameters in Cube(1:n_dim) & additional parameters that you want to
-returned by MultiNest along with the actual parameters in Cube(n_dim+1:nPar)
-Return the log-likelihood in lnew
+be returned by MultiNest along with the actual parameters in Cube(n_dim+1:nPar)
+
+Return the log-likelihood in lnew.
 
 ---------------------------------------------------------------------------
 
@@ -219,11 +240,60 @@ MAP (maximum-a-posteriori) parameter values, local log evidence, maximum loglike
 
 C/C++ Interface:
 
-C interface to MultiNest is provided in header file multinest.h in example_eggboxC directory.
-C++ interface to MultiNest is provided in header file multinest.h in example_eggboxC++ directory.
+Starting in MultiNest v2.18 there is a common C/C++ interface to MultiNest.  The file is located in the 
+"includes" directory.  Examples of how it may be used are found in the example_eggboxC and 
+example_eggboxC++ directories.
 
-You might need to check the symbol table for your platform (nm libnest3.a | grep nestrun) & edit 
-multinest.h file to define NESTRUN.
+You may need to check the symbol table for your platform (nm libmulitnest.a | grep nestrun) and edit the 
+multinest.h file to define NESTRUN.  Please let us know of any modifications made so they may be included
+in future releases.
+
+
+---------------------------------------------------------------------------
+
+Python Interface:
+
+Johannes Buchner has written an easy-to-use Python interface to MultiNest called PyMultiNest which 
+provides integration with existing scientific Python code (numpy, scipy). It allows you to write Prior & 
+likelihood functions in Python. It is available from:
+
+https://github.com/JohannesBuchner/PyMultiNest
+
+
+---------------------------------------------------------------------------
+
+R Interface:
+
+Johannes Buchner has written an R bridge for MultiNest called RMultiNest. It allows likelihood functions 
+written in R (http://www.r-project.org) to be used by MultiNest. It is available from:
+
+https://github.com/JohannesBuchner/RMultiNest
+
+
+---------------------------------------------------------------------------
+
+Matlab version of MultiNest:
+
+Matthew Pitkin and Joe Romano have created a simple Matlab version of MultiNest. It doesn't have all the 
+bells-and-whistles of the full implementation and just uses the basic Algorithm 1 from arXiv:0809.3437. It
+is available for download the MultiNest website:
+
+http://ccpforge.cse.rl.ac.uk/gf/project/multinest/
+
+
+---------------------------------------------------------------------------
+
+Visualization of MultiNest Output:
+
+[root].txt file created by MultiNest is compatable with the format required by getdist package which is 
+part of CosmoMC package. Refer to the following website in order to download or get more information about
+getdist:
+http://cosmologist.info/cosmomc/readme.html#Analysing
+
+
+Johannes Buchner's PyMultiNest can also be used on exisiting MultiNest output to plot & visualize results.
+https://github.com/JohannesBuchner/PyMultiNest
+
 
 ---------------------------------------------------------------------------
 
@@ -245,7 +315,7 @@ be modified through params.f90 file. Sampling parameters are also set in params.
 example_eggboxC/example_eggboxC++: The C/C++ interface includes the egg box problem discussed in arXiv:0809.3437. 
 The toy problem and sampling parameters are set in eggbox.c & eggbox.cc files.
 
-example_ackley: The Ackley mimimization problem (see T. Bäck, Evolutionary Algorithms in Theory and Practice, 
+example_ackley: The Ackley mimimization problem (see T. BÃ¤ck, Evolutionary Algorithms in Theory and Practice, 
 Oxford University Press, New York (1996).)
 
 example_himmelblau: The Himmelblau's minimization problem. (see http://en.wikipedia.org/wiki/Himmelblau's_function)
@@ -256,39 +326,39 @@ example_gaussian: Multivariate Gaussian with uncorrelated paramters.
 
 ---------------------------------------------------------------------------
 
-Build through CMake
-
-There is a minimal CMake file called CMakeLists.txt included (courtesy of Brian Kloppenborg). It can be used as follows:
-
-cmake CMakeLists.txt
-make
-
----------------------------------------------------------------------------
-
-Common Problems:
+Common Problems & FAQs:
 
 
-Problem: MultiNest crashes after segmentation fault.
+1. MultiNest crashes after segmentation fault.
 
-Solution: Try increasing the stack size (ulimit -s unlimited on Linux) & resume your job.
+Try increasing the stack size (ulimit -s unlimited on Linux) & resume your job.
 
 
-Problem: Output files (.txt & post_equal_weights.dat) files have very few (of order tens) points.
+2. Output files (.txt & post_equal_weights.dat) files have very few (of order tens) points.
 
-Solution: If tol is set to a reasonable value (tol <= 1) & the job hasn't finished then it is possible for these files to 
+If tol is set to a reasonable value (tol <= 1) & the job hasn't finished then it is possible for these files to 
 have very few points in them. If even after the completion of job these files have very few points then increase the stack
 size (ulimit -s unlimited on Linux) & resume the job again.
 
 
-Problem: Not all modes are being reported in the stats file.
+3. Not all modes are being reported in the stats file.
 
-Solution: stats file reports all the modes with local log-evidence value greater than Ztol. Set Ztol to a very large 
+stats file reports all the modes with local log-evidence value greater than Ztol. Set Ztol to a very large 
 negative number (e.g. -1.d90) in order for the stats file to report all the modes found.
 
 
-Problem: Compilation fails with error something like 'can not find nestrun function'.
+4. Compilation fails with error something like 'can not find nestrun function'.
 
-Solution: Check the symbol table for your platform (nm libnest3.a | grep nestrun) & edit multinest.h file to define NESTRUN
+Check the symbol table for your platform (nm libnest3.a | grep nestrun) & edit multinest.h file to define NESTRUN
 appropriately.
+
+
+5. When to use the constant efficiency mode?
+
+If the sampling efficiency with the standard MultiNest (when ceff = F) is very low & no. of free parameters is relatively 
+high (roughly greater than 30) then constant efficiency mode can be used to get higher sampling efficiency. Users should use
+ask for around 5% or lower targer efficiency (efr <= 0.05) in constant efficiency mode & ensure that posteriors are stable 
+when a slightly lower value is used for target efficiency. Evidence values obtained with constant efficiency mode will not be
+accurate.
 
 ---------------------------------------------------------------------------

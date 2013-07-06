@@ -1,5 +1,5 @@
 ! Do nested sampling algorithm to calculate Bayesian evidence
-! Mar 2012
+! Aug 2012
 ! Farhan Feroz
 
 module Nested
@@ -201,9 +201,9 @@ contains
 		endif
       
 		write(*,*)"*****************************************************"
-		write(*,*)"MultiNest v2.17"
+		write(*,*)"MultiNest v2.18"
       		write(*,*)"Copyright Farhan Feroz & Mike Hobson"
-      		write(*,*)"Release Mar 2012"
+      		write(*,*)"Release Aug 2012"
 		write(*,*)
       		write(*,'(a,i4)')" no. of live points = ",nest_nlive
       		write(*,'(a,i4)')" dimensionality = ",nest_ndims
@@ -1757,7 +1757,8 @@ contains
 								ic_eff(nd,2)=0d0
 								
 								if(1.2d0*d1<ef) then
-									ic_eff(nd,3)=ic_eff(nd,4)*(1d0+0.2d0*sqrt(1000d0/dble(ic_npt(nd))))
+									!ic_eff(nd,3)=ic_eff(nd,4)*(1d0+0.2d0*sqrt(1000d0/dble(ic_npt(nd))))
+									ic_eff(nd,3)=max(ic_eff(nd,3),ic_eff(nd,4)*(1d0+0.2d0*sqrt(1000d0/dble(ic_npt(nd)))))
 								elseif(d1>1.2d0*ef) then
 									ic_eff(nd,3)=max(ef,ic_eff(nd,4)/(1d0+0.2d0*sqrt(1000d0/dble(ic_npt(nd)))))
 									!ic_eff(nd,3)=ic_eff(nd,4)/(1d0+0.2d0*sqrt(1000d0/dble(ic_npt(nd))))
@@ -2219,14 +2220,14 @@ contains
     	end INTERFACE
     	
     	id=my_rank
-    
-    	if (.not.eswitch) then
-		!generate a random point inside unit hypercube
-		call getrandom(ndims,pnew(1:ndims),id)
-		phyPnew(1:ndims)=pnew(1:ndims)
-    		call loglike(phyPnew,ndims,totPar,lnew,context)
-    	else
-		do
+    	
+	do
+	    	if(.not.eswitch) then
+			!generate a random point inside unit hypercube
+			call getrandom(ndims,pnew(1:ndims),id)
+			phyPnew(1:ndims)=pnew(1:ndims)
+	    		call loglike(phyPnew,ndims,totPar,lnew,context)
+	    	else
 			!generate a point uniformly inside the given ellipsoid
 			call genPtInEll(ndims,mean,ekfac,TMat,id,pnew(1:ndims))
 			spnew(:)=limits(:,1)+(limits(:,2)-limits(:,1))*pnew(:)
@@ -2237,10 +2238,10 @@ contains
 			enddo
 			if(.not.inprior(ndims,spnew(1:ndims))) cycle
 			phyPnew(1:ndims)=spnew(1:ndims)
-    			call loglike(phyPnew,ndims,totPar,lnew,context)
-			if(lnew>logZero) exit
-		enddo
-      	endif
+	    		call loglike(phyPnew,ndims,totPar,lnew,context)
+	      	endif
+		if(lnew>logZero) exit
+	enddo
         
   end subroutine samp
   
@@ -2319,7 +2320,7 @@ contains
 	!work variables
 	integer i,j,k,i1,j2,j3,j4,i2,i3,i4,i5,n,n1,n2,n_mode,npt_mode,m,nLost
 	integer, allocatable :: order(:), nptx(:), nodex(:)
-	double precision d1,d2,d4,ef, ef1, ef2
+	double precision d1,d2,d4,ef0, ef1, ef2
 	integer nN,sc_n
 	logical, allocatable :: gList(:), lList(:), toBeChkd(:), overlapk(:,:)
 	logical flag,intFlag
@@ -2347,7 +2348,7 @@ contains
 	
 	do i=1,nN
 		!enlargement factor
-		ef = max( ( ic_vnow(i) * 100d0 / 111d0 ) + ( 11d0 / 111d0 ) , 0.4d0 )
+		ef0 = max( ( ic_vnow(i) * 100d0 / 111d0 ) + ( 11d0 / 111d0 ) , 0.4d0 )
 	
 		i3=ic_n
 		
@@ -2409,7 +2410,7 @@ contains
 			evalk(j,:),eveck(j,:,:),invcovk(j,:,:),tmatk(j,:,:),kfack(j),n1)
 			
 			if(mWrap) then
-				ef1=kfack(j)*max(2d0,((1.d0+ef*sqrt(50.d0/dble(nptx(sc_n+j))))**(1d0/nCdim)))
+				ef1=kfack(j)*max(2d0,((1.d0+ef0*sqrt(50.d0/dble(nptx(sc_n+j))))**(1d0/nCdim)))
 				call wrapEllCheck(nCdim,meank(j,:),tmatk(j,:,:),ef1,limits(i,:,:), &
 				wrapEll(j),wrapDim(j,:,:))
 				
@@ -2480,7 +2481,7 @@ contains
 					toBeChkd(j)=.false.
 					mean1(:)=meank(j,:)
 					eval1(:)=evalk(j,:)
-					ef1=kfack(j)*((1.d0+ef*sqrt(40.d0/dble(nptx(sc_n+j))))**(1d0/nCdim))
+					ef1=kfack(j)*((1.d0+ef0*sqrt(40.d0/dble(nptx(sc_n+j))))**(1d0/nCdim))
 					invcov1(:,:)=invcovk(j,:,:)
 					evec1(:,:)=eveck(j,:,:)
 					exit
@@ -2491,7 +2492,7 @@ contains
 				do n=1,k
 					if(lList(n) .or. n==j .or. .not.overlapk(n,j)) cycle
 					mean2(:)=meank(n,:)
-					ef2=kfack(n)*((1.d0+ef*sqrt(40.d0/dble(nptx(sc_n+n))))**(1d0/nCdim))
+					ef2=kfack(n)*((1.d0+ef0*sqrt(40.d0/dble(nptx(sc_n+n))))**(1d0/nCdim))
 					invcov2(:,:)=invcovk(n,:,:)
 					
 					intFlag=.false.
