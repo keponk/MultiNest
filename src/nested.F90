@@ -213,7 +213,7 @@ contains
 		endif
       
 		write(*,*)"*****************************************************"
-		write(*,*)"MultiNest v3.1"
+		write(*,*)"MultiNest v3.2"
       		write(*,*)"Copyright Farhan Feroz & Mike Hobson"
       		write(*,*)"Release Aug 2013"
 		write(*,*)
@@ -988,8 +988,8 @@ contains
 				!read the iteration info
 				open(unit=u_IS(3),file=IS_Files(3),form='unformatted',access='sequential',status='old')
 				do i = 1, IS_counter(5)
-					read(u_IS(3),IOSTAT=iostatus)IS_iterinfo(i,1:5)
-					
+					read(u_IS(3),IOSTAT=iostatus)IS_iterinfo(i,1),i1,i2,i3,i4
+					IS_iterinfo(i,2)=dble(i1); IS_iterinfo(i,3)=dble(i2); IS_iterinfo(i,4)=dble(i3); IS_iterinfo(i,5)=dble(i4)
 					!end of file?
 					if(iostatus<0) then
 						write(*,*)"ERROR: Not enough points in ",IS_Files(3)
@@ -3370,7 +3370,7 @@ contains
 	if( n2 == 0 ) return
 	
 	if( n1+n2 > n3 ) then
-		allocate(temp(n1,n5))
+		allocate(temp(n3,n5))
 		temp = array
 		deallocate(array)
 		allocate(array(n1+max(n2,n4),n5))
