@@ -1,8 +1,8 @@
-MultiNest v 3.0
+MultiNest v 3.1
 Farhan Feroz, Mike Hobson
 f.feroz@mrao.cam.ac.uk
 arXiv:0704.3704, arXiv:0809.3437 & arXiv:1306.2144
-Released Jun 2013
+Released Aug 2013
 
 ---------------------------------------------------------------------------
 
@@ -24,9 +24,10 @@ if they are not found.
 
 Building and installing MultiNest CMake version:
 
-Brian Kloppenborg has provided a CMake building enviornment which automatically builds MultiNest as both
-static and shared libraries with MPI enabled and disabled. The script will automatically detect lapack and
-any compiler quirks that needed to be manually configured in previous version of MultiNest.
+Brian Kloppenborg has provided a CMake building enviornment which automatically 
+builds MultiNest as both static and shared libraries with MPI enabled and 
+disabled. The script will automatically detect lapack and any compiler quirks 
+that needed to be manually configured in previous version of MultiNest.
 
 The script is setup to do an out-of-source build which is invoked by:
 
@@ -34,17 +35,40 @@ $ cd build
 $ cmake ..
 $ make
 
-This builds the libraries, binaries, and modules placing them in multinest/lib, multinest/bin, 
-and multinest/modules respectively.  The installer is invoked via:
+This builds the libraries, binaries, and modules placing them in multinest/lib, 
+multinest/bin, and multinest/modules respectively.  The installer is invoked 
+via:
 
 $ sudo make install
 
-which copies the libraries, headers, modules, and binaries to /usr/local/multinest by default.  
-If you wish to change the installation folder, edit the CMAKE_INSTALL_PREFIX in multinest/CMakeLists.txt
-and re-run "cmake .." before invoking the installer.
+This will install the libraries, headers, modules, and binaries into the
+corresponding directories in /usr/local by default. 
 
-After installation, add /usr/local/multinest (or whatever CMAKE_INSTALL_PREFIX was set to) to your PATH 
-variable.
+--------------
+Special notes:
+--------------
+
+1. Changing the default installation path
+If you wish to change the install directory either edit the 
+CMAKE_INSTALL_PREFIX  variable in the multinest/CMakeLists.txt file or specify 
+the directory when CMake is first invoked, i.e.
+
+$ cmake -DCMAKE_INSTALL_PREFIX=/path/to/local/install ..
+
+If the installation directory is changed, you will need to add the installation
+directory to your shell's PATH variable. Please see your system's documentation
+for how this can be accomplished.
+
+2. Apple machines and 64-bit libraries
+On Apple machines it appears only 32-bit binaries/libraries are built by
+default. If you wish to have 64-bit libraries, you need to set the 64-bit
+compiler flags when CMake is first invoked:
+
+$ cmake -DCMAKE_{C,CXX}_FLAGS="-arch x86_64" -DCMAKE_Fortran_FLAGS="-m64" ..
+
+3. Parallel building not functional
+At present parallel building is not possible due to the compilation
+of several Fortran modules required by the core MultiNest code.
 
 ---------------------------------------------------------------------------
 

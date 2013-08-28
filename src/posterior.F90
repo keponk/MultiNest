@@ -343,7 +343,7 @@ contains
 		
 		open(unit=58,file=summaryFile,status='unknown')
 		if( IS ) then
-			write(fmt,'(a,i4,a)')  '(',nPar*4+3,'E28.18)'
+			write(fmt,'(a,i4,a)')  '(',nPar*4+4,'E28.18)'
 			write(58,fmt)paramConstr(1:nPar),paramConstr(nPar+1:2*nPar),paramConstr(nPar*2+1:nPar*3), &
 			paramConstr(nPar*3+1:nPar*4),globZ,maxLogLike,IS_Z
 		else

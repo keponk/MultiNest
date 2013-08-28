@@ -1,5 +1,5 @@
 ! Do nested sampling algorithm to calculate Bayesian evidence
-! Aug 2012
+! Aug 2013
 ! Farhan Feroz
 
 module Nested
@@ -213,9 +213,9 @@ contains
 		endif
       
 		write(*,*)"*****************************************************"
-		write(*,*)"MultiNest v3.0"
+		write(*,*)"MultiNest v3.1"
       		write(*,*)"Copyright Farhan Feroz & Mike Hobson"
-      		write(*,*)"Release Jun 2013"
+      		write(*,*)"Release Aug 2013"
 		write(*,*)
       		write(*,'(a,i4)')" no. of live points = ",nest_nlive
       		write(*,'(a,i4)')" dimensionality = ",nest_ndims

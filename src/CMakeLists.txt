@@ -34,7 +34,8 @@ FIND_PACKAGE(LAPACK REQUIRED)
 foreach(lang C CXX Fortran)
     if(CMAKE_${lang}_COMPILER_ID STREQUAL GNU)
         MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler option.")
-        LIST(APPEND CMAKE_Fortran_FLAGS "-ffree-line-length-none")
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none")
+        #LIST(APPEND CMAKE_Fortran_FLAGS "-ffree-line-length-none")
         break()
     endif()
 endforeach()
@@ -69,17 +70,6 @@ FIND_PACKAGE(MPI)
 if(NOT MPI_Fortran_FOUND)
     MESSAGE(STATUS "MPI not found, only non-MPI MultiNest libraries will be built.")
 else()
-
-    set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-    set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
-    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-    set(CMAKE_Fortran_COMPILE_FLAGS ${CMAKE_Fortran_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-    set(CMAKE_Fortran_LINK_FLAGS ${CMAKE_Fortran_LINK_FLAGS} ${MPI_LINK_FLAGS})
-
-
-    include_directories(MPI_INCLUDE_PATH)
-
     ADD_LIBRARY(multinest_mpi_static STATIC ${MultiNest_SOURCE})
     SET_TARGET_PROPERTIES(multinest_mpi_static PROPERTIES LINKER_LANGUAGE Fortran VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest_mpi)
     TARGET_LINK_LIBRARIES(multinest_mpi_static ${LAPACK_LIBRARIES} ${MPI_Fortran_LIBRARIES})
@@ -141,11 +131,17 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # the RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
+# Determine which libraries we will be installing:
+SET(MultiNest_INSTALL_LIBS multinest_static multinest_shared)
+if(MPI_Fortran_FOUND)
+    LIST(APPEND ${MultiNest_INSTALL_LIBS} multinest_mpi_static multinest_mpi_shared)
+endif(MPI_Fortran_FOUND)
 
-INSTALL(TARGETS multinest_static multinest_shared multinest_mpi_static multinest_mpi_shared DESTINATION lib)
+INSTALL(TARGETS ${MultiNest_Install_Libs} DESTINATION lib)
+
 INSTALL(FILES 
     ${CMAKE_BINARY_DIR}/src/kmeans_clstr.mod
     ${CMAKE_BINARY_DIR}/src/nested.mod
@@ -156,7 +152,7 @@ INSTALL(FILES
     ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod 
     DESTINATION modules
 )
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/include/multinest.h DESTINATION include)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/includes/multinest.h DESTINATION includes)
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/CMakeModules/FindMultiNest.cmake DESTINATION CMakeModules)
 INSTALL(DIRECTORY
     ${CMAKE_SOURCE_DIR}/bin/chains
