@@ -109,6 +109,7 @@ ADD_CUSTOM_COMMAND(
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/randomns.mod ${CMAKE_SOURCE_DIR}/modules/
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/utils1.mod ${CMAKE_SOURCE_DIR}/modules/
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod ${CMAKE_SOURCE_DIR}/modules/
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/cnested.mod ${CMAKE_SOURCE_DIR}/modules/
 )
 
 # ============================
@@ -149,7 +150,8 @@ INSTALL(FILES
     ${CMAKE_BINARY_DIR}/src/priors.mod 
     ${CMAKE_BINARY_DIR}/src/randomns.mod
     ${CMAKE_BINARY_DIR}/src/utils1.mod
-    ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod 
+    ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod
+    ${CMAKE_BINARY_DIR}/src/cnested.mod
     DESTINATION modules
 )
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/includes/multinest.h DESTINATION includes)
