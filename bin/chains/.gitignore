@@ -2,5 +2,4 @@
 # ignore everything here
 *
 # except this file
-!chains
 !.gitignore
