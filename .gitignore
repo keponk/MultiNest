@@ -2,6 +2,3 @@
 *.mod
 *.a
 *.so
-bin/
-build/
-lib/
