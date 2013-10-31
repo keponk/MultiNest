@@ -1,8 +1,8 @@
-MultiNest v 3.3
+MultiNest v 3.4
 Farhan Feroz, Mike Hobson
 f.feroz@mrao.cam.ac.uk
 arXiv:0704.3704, arXiv:0809.3437 & arXiv:1306.2144
-Released Sep 2013
+Released Oct 2013
 
 ---------------------------------------------------------------------------
 
@@ -69,6 +69,13 @@ $ cmake -DCMAKE_{C,CXX}_FLAGS="-arch x86_64" -DCMAKE_Fortran_FLAGS="-m64" ..
 3. Parallel building not functional
 At present parallel building is not possible due to the compilation
 of several Fortran modules required by the core MultiNest code.
+
+4. Library not found / non-standard library locations
+If you have a library that resides in a non-standard location or is not found by
+CMake, try specifying the absolute path to the library using the 
+CMAKE_PREFIX_PATH when first invoking CMake:
+
+$ cmake -DCMAKE_PREFIX_PATH=/non/standard/directory ..
 
 ---------------------------------------------------------------------------
 

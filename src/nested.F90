@@ -1,5 +1,5 @@
 ! Do nested sampling algorithm to calculate Bayesian evidence
-! Aug 2013
+! Oct 2013
 ! Farhan Feroz
 
 module Nested
@@ -213,9 +213,9 @@ contains
 		endif
       
 		write(*,*)"*****************************************************"
-		write(*,*)"MultiNest v3.3"
+		write(*,*)"MultiNest v3.4"
       		write(*,*)"Copyright Farhan Feroz & Mike Hobson"
-      		write(*,*)"Release Sep 2013"
+      		write(*,*)"Release Oct 2013"
 		write(*,*)
       		write(*,'(a,i4)')" no. of live points = ",nest_nlive
       		write(*,'(a,i4)')" dimensionality = ",nest_ndims
@@ -1077,7 +1077,7 @@ contains
 					enddo
 					!write the node info
 					do i=1,ic_n
-						write(funit1,'(2l2,2i6)')ic_done(i),ic_reme(i),ic_fNode(i),ic_npt(i)
+						write(funit1,'(2l2,i6,i12)')ic_done(i),ic_reme(i),ic_fNode(i),ic_npt(i)
 						write(funit1,'(3E28.18)')ic_vnow(i),ic_Z(i),ic_info(i)
 						if(ceff) write(funit1,'(1E28.18)')ic_eff(i,4)
 					enddo
@@ -2363,7 +2363,7 @@ contains
 					
 						!write the node info
 						do i=1,ic_n
-							write(funit1,'(2l2,2i6)')ic_done(i),ic_reme(i),ic_fNode(i), ic_npt(i)
+							write(funit1,'(2l2,i6,i12)')ic_done(i),ic_reme(i),ic_fNode(i),ic_npt(i)
 							write(funit1,'(3E28.18)')ic_vnow(i),ic_Z(i),ic_info(i)
 							if(ceff) write(funit1,'(1E28.18)')ic_eff(i,4)
 						enddo
