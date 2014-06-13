@@ -33,31 +33,40 @@ FIND_PACKAGE(LAPACK REQUIRED)
 # If we are compiling with gfortran, add -ffree-line-length-none
 foreach(lang C CXX Fortran)
     if(CMAKE_${lang}_COMPILER_ID STREQUAL GNU)
-        MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler option.")
+        MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler flag.")
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none")
-        #LIST(APPEND CMAKE_Fortran_FLAGS "-ffree-line-length-none")
         break()
     endif()
 endforeach()
 
-
 # Enable optimization.
 #LIST(APPEND CMAKE_Fortran_FLAGS "-O3")
 
+# ============================
 # Collect the source:
+# ============================
 FILE(GLOB MultiNest_SOURCE *.f90 *.F90)
+# Several users have reported errors when compiling cwrapper.f90. This wrapper
+# is no longer used internally by MultiNest so we will no longer compile it
+# by default. If you need it, comment out this line and uncomment the two lines
+# below that reference cwrapper.mod
+list(REMOVE_ITEM MultiNest_SOURCE crapper.f90)
 
 # ============================
 # Build the non-MPI libraries:
 # ============================
 # libmultinest.a
 ADD_LIBRARY(multinest_static STATIC ${MultiNest_SOURCE})
-SET_TARGET_PROPERTIES(multinest_static PROPERTIES LINKER_LANGUAGE Fortran VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest)
+SET_TARGET_PROPERTIES(multinest_static PROPERTIES LINKER_LANGUAGE Fortran 
+    VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest
+)
 TARGET_LINK_LIBRARIES(multinest_static ${LAPACK_LIBRARIES})
 
 # libmultinest.so
 ADD_LIBRARY(multinest_shared SHARED ${MultiNest_SOURCE})
-SET_TARGET_PROPERTIES(multinest_shared PROPERTIES LINKER_LANGUAGE Fortran VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest)
+SET_TARGET_PROPERTIES(multinest_shared PROPERTIES LINKER_LANGUAGE Fortran 
+    VERSION ${MultiNest_VERSION} OUTPUT_NAME multinest
+)
 TARGET_LINK_LIBRARIES(multinest_shared ${LAPACK_LIBRARIES})  
 
 # Set the default library against which to link:
@@ -97,7 +106,7 @@ else()
 endif ()
 
 # ============================
-# After compilation is complete, copy the Fortran Modules to the module directory.
+# After compilation, copy the Fortran modules into the 'modules' directory.
 # ============================
 ADD_CUSTOM_COMMAND(
     TARGET multinest_static
@@ -109,40 +118,38 @@ ADD_CUSTOM_COMMAND(
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/randomns.mod ${CMAKE_SOURCE_DIR}/modules/
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/utils1.mod ${CMAKE_SOURCE_DIR}/modules/
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod ${CMAKE_SOURCE_DIR}/modules/
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/cnested.mod ${CMAKE_SOURCE_DIR}/modules/
+# cnested is not built by default anymore so it need not be copied
+#    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/src/cnested.mod ${CMAKE_SOURCE_DIR}/modules/
 )
 
 # ============================
-# Setup the installation commands
+# Installation commands
 # ============================
-# use, i.e. don't skip the full RPATH for the build tree
+
+# We need to modify the RPATH between the compilation and installation phases.
+# When we first build the programs, we use the full RPATH within the build tree
+# instead of the default system RPATH. This ensures the binaries are executable
+# right away.
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-
 SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-
-# the RPATH to be used when installing, but only if it's not a system directory
+# When we install, switch the RPATH to the default system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
-# Determine which libraries we will be installing:
+# Determine which libraries we will be installing. 
 SET(MultiNest_INSTALL_LIBS multinest_static multinest_shared)
 if(MPI_Fortran_FOUND)
-    LIST(APPEND ${MultiNest_INSTALL_LIBS} multinest_mpi_static multinest_mpi_shared)
+    LIST(APPEND MultiNest_INSTALL_LIBS multinest_mpi_static multinest_mpi_shared)
 endif(MPI_Fortran_FOUND)
 
-INSTALL(TARGETS ${MultiNest_Install_Libs} DESTINATION lib)
-
+# Specify where compiled files should go
+INSTALL(TARGETS ${MultiNest_INSTALL_LIBS} DESTINATION lib)
+# Don't forget the fortran modules!
 INSTALL(FILES 
     ${CMAKE_BINARY_DIR}/src/kmeans_clstr.mod
     ${CMAKE_BINARY_DIR}/src/nested.mod
@@ -151,11 +158,17 @@ INSTALL(FILES
     ${CMAKE_BINARY_DIR}/src/randomns.mod
     ${CMAKE_BINARY_DIR}/src/utils1.mod
     ${CMAKE_BINARY_DIR}/src/xmeans_clstr.mod
-    ${CMAKE_BINARY_DIR}/src/cnested.mod
+# cnested is not built by default anymore so it need not be installed.
+#    ${CMAKE_BINARY_DIR}/src/cnested.mod
     DESTINATION modules
 )
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/includes/multinest.h DESTINATION includes)
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/CMakeModules/FindMultiNest.cmake DESTINATION CMakeModules)
+# Install the multinest.h file
+# Install the FindMultiNest.cmake script (this probably isn't the right place)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/include/multinest.h DESTINATION include)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/CMakeModules/FindMultiNest.cmake DESTINATION
+    CMakeModules
+)
+# and ensure the chains directory is created too
 INSTALL(DIRECTORY
     ${CMAKE_SOURCE_DIR}/bin/chains
     DESTINATION bin

@@ -1,5 +1,5 @@
 ! Do nested sampling algorithm to calculate Bayesian evidence
-! Oct 2013
+! Feb 2014
 ! Farhan Feroz
 
 module Nested
@@ -43,6 +43,7 @@ module Nested
   logical debug, prior_warning, resume, outfile
   !importance sampling
   logical :: IS = .true.
+  logical bogus
 
 contains
   
@@ -90,6 +91,7 @@ contains
 	mpi_nthreads=1
 	my_rank=0
 #endif
+	bogus = .false.
 	nest_nsc=50
       	nlive=nest_nlive
 	Ztol=nest_Ztol
@@ -213,9 +215,9 @@ contains
 		endif
       
 		write(*,*)"*****************************************************"
-		write(*,*)"MultiNest v3.4"
+		write(*,*)"MultiNest v3.5"
       		write(*,*)"Copyright Farhan Feroz & Mike Hobson"
-      		write(*,*)"Release Oct 2013"
+      		write(*,*)"Release Feb 2014"
 		write(*,*)
       		write(*,'(a,i4)')" no. of live points = ",nest_nlive
       		write(*,'(a,i4)')" dimensionality = ",nest_ndims
@@ -255,6 +257,7 @@ contains
 	double precision ltmp(totPar+2)
 	character(len=100) fmt
 	integer np,i,j,k,ios
+	logical flag
 
 	
 	INTERFACE
@@ -347,7 +350,7 @@ contains
 		
 		call gen_initial_live(p,phyP,l,loglike,dumper,context)
 	
-		if(my_rank==0) then
+		if(my_rank==0 .and. .not.bogus) then
 			globff=nlive
 			numlike=nlive
 	  		if(fback) write(*,*) 'live points generated, starting sampling'
@@ -358,12 +361,16 @@ contains
 	call MPI_BARRIER(MPI_COMM_WORLD,errcode)
 #endif
 	
-	call clusteredNest(p,phyP,l,loglike,dumper,context)
+	if( .not.bogus ) call clusteredNest(p,phyP,l,loglike,dumper,context)
 	
-	if(my_rank==0) then
-		write(*,*)"ln(ev)=",gZ,"+/-",sqrt(ginfo/dble(nlive))
-		write(*,'(a,i12)')' Total Likelihood Evaluations: ', numlike
-		write(*,*)"Sampling finished. Exiting MultiNest"
+	if( my_rank==0 ) then
+		if( .not.bogus ) then
+			write(*,*)"ln(ev)=",gZ,"+/-",sqrt(ginfo/dble(nlive))
+			write(*,'(a,i12)')' Total Likelihood Evaluations: ', numlike
+			write(*,*)"Sampling finished. Exiting MultiNest"
+		else
+			write(*,*)"Exit signal received"
+		endif
 		setBlk=.false.
 	endif
 	
@@ -403,6 +410,7 @@ contains
 			double precision maxLogLike, logZ, logZerr
 		end subroutine dumper
 	end INTERFACE
+	
 	
 	allocate( pnewP(ndims,10), phyPnewP(totPar,10), lnewP(10) )
 #ifdef MPI
@@ -524,6 +532,7 @@ contains
 			phyPnewP(1:ndims,j)=pnewP(1:ndims,j)
 			lnewP(j)=logZero
 			call loglike(phyPnewP(:,j),ndims,totPar,lnewP(j),context)
+			if( lnewP(j) == HUGE(1d0) ) bogus = .true.
                   	if(lnewP(j)>logZero) exit
 		enddo
 		if(k==nptPerProc .or. j==10) then
@@ -563,6 +572,7 @@ contains
 					do q = 1 , i
 						if( nend + 1 <= nlive ) then
 							l(nend + 1) = tmpl(q)
+							if( tmpl(q) == HUGE(1d0) ) bogus = .true.
 							p(1 : ndims, nend + 1) = tmpp(1 : ndims, q)
 							phyP(1 : totPar, nend + 1) = tmpphyP(1 : totPar, q)
 							nend = nend + 1
@@ -571,7 +581,7 @@ contains
 				enddo
 #endif
 				
-				if( outfile ) then
+				if( outfile .and. .not.bogus ) then
 					!now write this batch to the files
 					do m=nstart,nend
 						write(u_live,fmt) p(1:ndims,m),l(m)
@@ -580,7 +590,12 @@ contains
 				endif
 			endif
 		endif
-		if(k==nptPerProc) exit
+
+#ifdef MPI
+		call MPI_BCAST(bogus,1,MPI_LOGICAL,0,MPI_COMM_WORLD,errcode)
+#endif
+
+		if(k==nptPerProc .or. bogus) exit
 	enddo
 	
 	
@@ -1764,6 +1779,8 @@ contains
 									pnewa(nd,1,:)=pnew(:)
 									phyPnewa(nd,1,:)=phyPnew(:)
 								endif
+								
+								if( lnew == HUGE(1d0) ) bogus = .true.
 							endif
 #ifdef MPI
 							call MPI_BARRIER(MPI_COMM_WORLD,errcode)
@@ -1781,6 +1798,7 @@ contains
 										call MPI_RECV(pnewa(nd,i2+1,1:ndims),ndims,MPI_DOUBLE_PRECISION,i2,i2,MPI_COMM_WORLD,mpi_status,errcode)
 										call MPI_RECV(phyPnewa(nd,i2+1,1:totPar),totPar,MPI_DOUBLE_PRECISION,i2,i2,MPI_COMM_WORLD,mpi_status,errcode)
 									endif
+									if( lnewa(nd,i2+1) == HUGE(1d0) ) bogus = .true.
 								enddo
 							endif
 							call MPI_BARRIER(MPI_COMM_WORLD,errcode)
@@ -1840,9 +1858,10 @@ contains
 #ifdef MPI
 						call MPI_BARRIER(MPI_COMM_WORLD,errcode)
 						call MPI_BCAST(acpt,1,MPI_LOGICAL,0,MPI_COMM_WORLD,errcode)
+						call MPI_BCAST(bogus,1,MPI_LOGICAL,0,MPI_COMM_WORLD,errcode)
 #endif
 	                        	
-						if(acpt) exit
+						if(acpt .or. bogus) exit
 					enddo
 				
 	                        	if(my_rank==0) then      	
@@ -1918,6 +1937,7 @@ contains
 								endif
 								
 								lnewa(nd,1)=lnew
+								if( lnew == HUGE(1d0) ) bogus = .true.
 						
 								if(lnew>logZero) then
 									sEll(nd,1)=i-nd_i
@@ -1950,11 +1970,13 @@ contains
 										call MPI_RECV(pnewa(nd,i2+1,1:ndims),ndims,MPI_DOUBLE_PRECISION,i2,i2,MPI_COMM_WORLD,mpi_status,errcode)
 										call MPI_RECV(phyPnewa(nd,i2+1,1:totPar),totPar,MPI_DOUBLE_PRECISION,i2,i2,MPI_COMM_WORLD,mpi_status,errcode)
 									endif
+									
+									if( lnewa(nd,i2+1) == HUGE(1d0) ) bogus = .true.
 								enddo
 							endif
 							call MPI_BARRIER(MPI_COMM_WORLD,errcode)
 #endif
-							if( IS .and. my_rank == 0 ) then
+							if( IS .and. my_rank == 0 .and. .not.bogus ) then
 								i3 = IS_counter(1)
 								do i2=1, mpi_nthreads
 									if( lnewa(nd,i2) > logZero ) then
@@ -1987,7 +2009,7 @@ contains
 							endif
 						endif
 					
-						if(my_rank==0) then
+						if(my_rank==0 .and. .not.bogus) then
 							!check if any of them is inside the hard edge
 	                        			do j1=rIdx(nd),mpi_nthreads
 								numlike=numlike+1
@@ -2048,7 +2070,10 @@ contains
 #ifdef MPI
 						call MPI_BARRIER(MPI_COMM_WORLD,errcode)
 						call MPI_BCAST(acpt,1,MPI_LOGICAL,0,MPI_COMM_WORLD,errcode)
+						call MPI_BCAST(bogus,1,MPI_LOGICAL,0,MPI_COMM_WORLD,errcode)
 #endif
+					
+						if( bogus ) exit
 					
 	                        		if(acpt) then
 							if(my_rank==0) then
@@ -2071,6 +2096,8 @@ contains
 							exit
 	            				endif
 	      				enddo
+					
+					if( bogus ) exit
 
 				
 					if(my_rank==0) then
@@ -2450,6 +2477,8 @@ contains
 			if( ic_done(0) ) exit
 		enddo
 		
+		if( bogus ) exit
+		
 		if(my_rank==0) then
 			!update the total volume
 			if(eswitch) then
@@ -2785,8 +2814,8 @@ contains
 	double precision, allocatable :: meanw(:,:),meank(:,:),evalk(:,:),eveck(:,:,:),invcovk(:,:,:),tmatk(:,:,:),kfack(:)
 	
 	
-	allocate( order(nCdim), nptx(npt/(ndim+1)+1), nodex(npt/(ndim+1)+1) )
-	allocate( gList(npt/(ndim+1)+1), lList(npt/(ndim+1)+1), toBeChkd(npt/(ndim+1)+1), overlapk(npt/(ndim+1)+1,npt/(ndim+1)+1) )
+	allocate( order(nCdim), nptx(npt/(nCdim+1)+1), nodex(npt/(nCdim+1)+1) )
+	allocate( gList(npt/(nCdim+1)+1), lList(npt/(nCdim+1)+1), toBeChkd(npt/(nCdim+1)+1), overlapk(npt/(nCdim+1)+1,npt/(nCdim+1)+1) )
 	allocate( ptk(nCdim,npt), auxk(naux,npt), ptx(nCdim,npt), auxx(naux,npt), mMean(nCdim), lMean(nCdim), mStdErr(nCdim), &
 	lStdErr(nCdim), mean1(nCdim), mean2(nCdim), mean1w(nCdim), mean2w(nCdim), eval1(nCdim), evec1(nCdim,nCdim), &
 	invcov1(nCdim,nCdim), invcov2(nCdim,nCdim) )

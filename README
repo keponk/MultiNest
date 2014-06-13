@@ -1,8 +1,8 @@
-MultiNest v 3.4
+MultiNest v 3.5
 Farhan Feroz, Mike Hobson
 f.feroz@mrao.cam.ac.uk
 arXiv:0704.3704, arXiv:0809.3437 & arXiv:1306.2144
-Released Oct 2013
+Released Feb 2014
 
 ---------------------------------------------------------------------------
 
@@ -17,65 +17,21 @@ Users are also required to cite the MultiNest papers (arXiv:0704.3704, arXiv:080
 Required Libraries:
 
 MultiNest requires lapack. To use MPI support, some MPI library must also be installed.
-The CMake compilation script will automatically find both libraries, or stop compilation
-if they are not found.
 
 ---------------------------------------------------------------------------
 
-Building and installing MultiNest CMake version:
+MPI Support:
 
-Brian Kloppenborg has provided a CMake building enviornment which automatically 
-builds MultiNest as both static and shared libraries with MPI enabled and 
-disabled. The script will automatically detect lapack and any compiler quirks 
-that needed to be manually configured in previous version of MultiNest.
+The code is MPI compatible. In order to disable the MPI parallelization, remove -DMPI compilation flag.
 
-The script is setup to do an out-of-source build which is invoked by:
+---------------------------------------------------------------------------
 
-$ cd build
-$ cmake ..
-$ make
+gfortran compiler:
 
-This builds the libraries, binaries, and modules placing them in multinest/lib, 
-multinest/bin, and multinest/modules respectively.  The installer is invoked 
-via:
+You might need to use the following flag while compiling MultiNest with gfortran compiler to remove the
+restriction imposed by gfortran on line length.
 
-$ sudo make install
-
-This will install the libraries, headers, modules, and binaries into the
-corresponding directories in /usr/local by default. 
-
---------------
-Special notes:
---------------
-
-1. Changing the default installation path
-If you wish to change the install directory either edit the 
-CMAKE_INSTALL_PREFIX  variable in the multinest/CMakeLists.txt file or specify 
-the directory when CMake is first invoked, i.e.
-
-$ cmake -DCMAKE_INSTALL_PREFIX=/path/to/local/install ..
-
-If the installation directory is changed, you will need to add the installation
-directory to your shell's PATH variable. Please see your system's documentation
-for how this can be accomplished.
-
-2. Apple machines and 64-bit libraries
-On Apple machines it appears only 32-bit binaries/libraries are built by
-default. If you wish to have 64-bit libraries, you need to set the 64-bit
-compiler flags when CMake is first invoked:
-
-$ cmake -DCMAKE_{C,CXX}_FLAGS="-arch x86_64" -DCMAKE_Fortran_FLAGS="-m64" ..
-
-3. Parallel building not functional
-At present parallel building is not possible due to the compilation
-of several Fortran modules required by the core MultiNest code.
-
-4. Library not found / non-standard library locations
-If you have a library that resides in a non-standard location or is not found by
-CMake, try specifying the absolute path to the library using the 
-CMAKE_PREFIX_PATH when first invoking CMake:
-
-$ cmake -DCMAKE_PREFIX_PATH=/non/standard/directory ..
+-ffree-line-length-none
 
 ---------------------------------------------------------------------------
 
@@ -270,7 +226,7 @@ There are nmode+1 (nmode = number of modes) rows in this file. First row has the
 posterior. After the first line there is one row per mode with nPar*4+2 values in each line in this file. 
 Each row has the following values in its column mean parameter values, standard deviations of the parameters, 
 bestfit (maxlike) parameter values, MAP (maximum-a-posteriori) parameter values, local log-evidence, maximum 
-loglike value. If IS = T (i.e. INS being used), firs row has an additional value right at the end, INS 
+loglike value. If IS = T (i.e. INS being used), first row has an additional value right at the end, INS 
 log-evidence estimate.
 
 ---------------------------------------------------------------------------
