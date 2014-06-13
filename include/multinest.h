@@ -58,14 +58,14 @@ namespace nested
 			int &nPar, int &nClsPar, int &maxModes, int &updInt, double &Ztol, char *root, int &seed,
 			int *pWrap, int &fb, int &resume, int &outfile, int &initMPI, double &logZero, int &maxiter,
 			void (*Loglike)(double *Cube, int &n_dim, int &n_par, double &lnew, void *),
-			void (*dumper)(int &, int &, int &, double **, double **, double **, double &, double &, double &, void *),
+			void (*dumper)(int &, int &, int &, double **, double **, double **, double &, double &, double &, double &, void *),
 			void *context, int &root_len);
 	}
 
 	static void run(bool IS, bool mmodal, bool ceff, int nlive, double tol, double efr, int ndims, int nPar, int nClsPar, int maxModes,
 		int updInt, double Ztol, const std::string & root, int seed, int *pWrap, bool fb, bool resume, bool outfile, 
 		bool initMPI, double logZero, int maxiter, void (*LogLike)(double *Cube, int &n_dim, int &n_par, double &lnew, void *),
-		void (*dumper)(int &, int &, int &, double **, double **, double **, double &, double &, double &, void *), void *context)
+		void (*dumper)(int &, int &, int &, double **, double **, double **, double &, double &, double &, double &, void *), void *context)
 	{
 		char t_root[100];
 		std::fill(t_root, t_root + 100, ' ');
@@ -95,12 +95,12 @@ namespace nested
 extern void NESTRUN(int *, int *, int *, int *, double *, double *, int *, int *, int *, int *, int *, double *, 
 char *, int *, int *, int *, int *, int *, int *, double *, int *, void (*Loglike)(double *, int *, int *, 
 double *, void *), void (*dumper)(int *, int *, int *, double **, double **, double **, double *, 
-double *, double *, void *), void *context);
+double *, double *, double *, void *), void *context);
 
 void run(int IS, int mmodal, int ceff, int nlive, double tol, double efr, int ndims, int nPar, int nClsPar, 
 int maxModes, int updInt, double Ztol, char root[], int seed, int *pWrap, int fb, int resume, int outfile, 
 int initMPI, double logZero, int maxiter, void (*LogLike)(double *, int *, int *, double *, void *), 
-void (*dumper)(int *, int *, int *, double **, double **, double **, double *, double *, double *, void *), 
+void (*dumper)(int *, int *, int *, double **, double **, double **, double *, double *, double *, double *, void *), 
 void *context)
 {
 	int i;

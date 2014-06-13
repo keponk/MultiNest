@@ -10,7 +10,7 @@ project(multinest Fortran C CXX)
 
 #=============================================================================
 # All done editing
-SET(MultiNest_VERSION "3.6")
+SET(MultiNest_VERSION "3.7")
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
