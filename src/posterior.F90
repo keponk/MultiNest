@@ -55,15 +55,15 @@ contains
 	
 	! parameters for dumper
 	double precision, pointer :: physLive(:,:), posterior(:,:), paramConstr(:)
-	double precision maxLogLike, logZ, logZerr
+	double precision maxLogLike, logZ, INSlogZ, logZerr
 	integer nSamples
 	
 	INTERFACE
 		!the user dumper function
-    		subroutine dumper(nSamples, nlive, nPar, physLive, posterior, paramConstr, maxLogLike, logZ, logZerr, context_pass)
+    		subroutine dumper(nSamples, nlive, nPar, physLive, posterior, paramConstr, maxLogLike, logZ, INSlogZ, logZerr, context_pass)
 			integer nSamples, nlive, nPar, context_pass
 			double precision, pointer :: physLive(:,:), posterior(:,:), paramConstr(:)
-			double precision maxLogLike, logZ, logZerr
+			double precision maxLogLike, logZ, INSlogZ, logZerr
 		end subroutine dumper
 	end INTERFACE
 	
@@ -363,7 +363,9 @@ contains
 	logZerr=sqrt(ginfoloc/dble(nLpt))
 	
 	! call the dumper
-	call dumper(nSamples, nLpt, nPar, physLive, posterior, paramConstr, maxLogLike, logZ, logZerr, context)
+	INSlogZ = logZ
+	if( IS ) INSlogZ = IS_Z(1)
+	call dumper(nSamples, nLpt, nPar, physLive, posterior, paramConstr, maxLogLike, logZ, INSlogZ, logZerr, context)
 
       	deallocate(branchp,evdatp,wt)
       	deallocate(nbranchp,nPtPerNode)

@@ -48,9 +48,10 @@ endforeach()
 FILE(GLOB MultiNest_SOURCE *.f90 *.F90)
 # Several users have reported errors when compiling cwrapper.f90. This wrapper
 # is no longer used internally by MultiNest so we will no longer compile it
-# by default. If you need it, comment out this line and uncomment the two lines
-# below that reference cwrapper.mod
-list(REMOVE_ITEM MultiNest_SOURCE crapper.f90)
+# by default. If you need it, comment out these two lines and uncomment the two 
+# lines below that reference cwrapper.mod
+FILE(GLOB MultiNest_REMOVE cwrapper.f90)
+list(REMOVE_ITEM MultiNest_SOURCE ${MultiNest_REMOVE})
 
 # ============================
 # Build the non-MPI libraries:

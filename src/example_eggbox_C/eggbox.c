@@ -60,11 +60,12 @@ void LogLike(double *Cube, int *ndim, int *npars, double *lnew, void *context)
 // paramConstr[0][nPar*2] to paramConstr[0][3*nPar - 1] = best-fit (maxlike) parameters
 // paramConstr[0][nPar*4] to paramConstr[0][4*nPar - 1] = MAP (maximum-a-posteriori) parameters
 // maxLogLike						= maximum loglikelihood value
-// logZ							= log evidence value
+// logZ							= log evidence value from the default (non-INS) mode
+// INSlogZ						= log evidence value from the INS mode
 // logZerr						= error on log evidence value
 // context						void pointer, any additional information
 
-void dumper(int *nSamples, int *nlive, int *nPar, double **physLive, double **posterior, double **paramConstr, double *maxLogLike, double *logZ, double *logZerr, void *context)
+void dumper(int *nSamples, int *nlive, int *nPar, double **physLive, double **posterior, double **paramConstr, double *maxLogLike, double *logZ, double *INSlogZ, double *logZerr, void *context)
 {
 	// convert the 2D Fortran arrays to C arrays
 	
@@ -106,9 +107,9 @@ int main(int argc, char *argv[])
 	// set the MultiNest sampling parameters
 	
 	
-	int IS = 0;					// do Nested Importance Sampling?
+	int IS = 1;					// do Nested Importance Sampling?
 	
-	int mmodal = 1;					// do mode separation?
+	int mmodal = 0;					// do mode separation?
 	
 	int ceff = 0;					// run in constant efficiency mode?
 	
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
 	
 	int nClsPar = 2;				// no. of parameters to do mode separation on
 	
-	int updInt = 500;				// after how many iterations feedback is required & the output files should be updated
+	int updInt = 1000;				// after how many iterations feedback is required & the output files should be updated
 							// note: posterior files are updated & dumper routine is called after every updInt*10 iterations
 	
 	double Ztol = -1E90;				// all the modes with logZ < Ztol are ignored

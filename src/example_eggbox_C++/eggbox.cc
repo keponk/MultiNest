@@ -61,11 +61,12 @@ void LogLike(double *Cube, int &ndim, int &npars, double &lnew, void *context)
 // paramConstr[0][nPar*2] to paramConstr[0][3*nPar - 1] = best-fit (maxlike) parameters
 // paramConstr[0][nPar*4] to paramConstr[0][4*nPar - 1] = MAP (maximum-a-posteriori) parameters
 // maxLogLike						= maximum loglikelihood value
-// logZ							= log evidence value
+// logZ							= log evidence value from the default (non-INS) mode
+// INSlogZ						= log evidence value from the INS mode
 // logZerr						= error on log evidence value
 // context						void pointer, any additional information
 
-void dumper(int &nSamples, int &nlive, int &nPar, double **physLive, double **posterior, double **paramConstr, double &maxLogLike, double &logZ, double &logZerr, void *context)
+void dumper(int &nSamples, int &nlive, int &nPar, double **physLive, double **posterior, double **paramConstr, double &maxLogLike, double &logZ, double &INSlogZ, double &logZerr, void *context)
 {
 	// convert the 2D Fortran arrays to C++ arrays
 	
