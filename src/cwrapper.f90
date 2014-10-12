@@ -15,7 +15,7 @@
 ! double loglike(double *Cube,int n_dim,int nPar,void *context);
 ! void dumper(int nSamples,int nlive,int nPar, \
 !             double *physLive,double *posterior,double *paramConstr, \
-!             double maxLogLike,double logZ,double logZerr,void *context);
+!             double maxLogLike,double logZ,double INSlogZ,double logZerr,void *context);
 !
 ! note that we are assuming that (void *) is the same size as int, but that's what multinest uses
 
@@ -97,24 +97,24 @@ module cnested
 
 	end subroutine loglike_f
 
-	subroutine dumper_f(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,logZerr,context_pass)
+	subroutine dumper_f(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,INSlogZ,logZerr,context_pass)
 	use iso_c_binding, only: c_double, c_f_procpointer
 	  
 	implicit none
 
 	integer          :: nSamples, nlive, nPar, context_pass
 	double precision, pointer :: physLive(:,:), posterior(:,:), paramConstr(:)
-	double precision :: maxLogLike, logZ, logZerr
+	double precision :: maxLogLike, logZ, INSlogZ, logZerr
 
 	interface
-		subroutine dumper_proto(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,logZerr,context)
+		subroutine dumper_proto(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,INSlogZ,logZerr,context)
 		use iso_c_binding, only: c_int, c_double, c_ptr
 	      
 		implicit none
 
 		integer(c_int), intent(in), value :: nSamples, nlive, nPar
 		real(c_double), intent(in) :: physLive(nlive,nPar+1), posterior(nSamples,nPar+2),paramConstr(4*nPar)
-		real(c_double), intent(in), value :: maxLogLike, logZ, logZerr
+		real(c_double), intent(in), value :: maxLogLike, logZ, INSlogZ, logZerr
 		integer(c_int), intent(in), value :: context
 		! better, but "transfer" is problematic:
 		! type(c_ptr),  intent(in) :: context
@@ -128,7 +128,7 @@ module cnested
 	! type(c_ptr) :: context_c
 	! context_c = transfer(context_pass,context_c)
 
-	call dumper_c(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,logZerr,context_pass)
+	call dumper_c(nSamples,nlive,nPar,physLive,posterior,paramConstr,maxLogLike,logZ,INSlogZ,logZerr,context_pass)
 
 	end subroutine dumper_f
 
