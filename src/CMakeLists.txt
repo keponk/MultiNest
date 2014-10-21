@@ -39,6 +39,13 @@ foreach(lang C CXX Fortran)
     endif()
 endforeach()
 
+# Emit a warning for gfortran < 4.3.6 and cwrapper.f90
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+ if(${CMAKE_C_COMPILER_VERSION} VERSION_LESS 4.3.7)
+    message(WARNING "Insufficient gfortran version for the cwrapper module. PyMultiNest will not work automagically. Please refer to the PyMultiNest manual if you want to use it. https://johannesbuchner.github.io/PyMultiNest/install.html")
+ endif()
+endif()
+
 # Enable optimization.
 #LIST(APPEND CMAKE_Fortran_FLAGS "-O3")
 
@@ -46,12 +53,12 @@ endforeach()
 # Collect the source:
 # ============================
 FILE(GLOB MultiNest_SOURCE *.f90 *.F90)
-# Several users have reported errors when compiling cwrapper.f90. This wrapper
-# is no longer used internally by MultiNest so we will no longer compile it
-# by default. If you need it, comment out these two lines and uncomment the two 
-# lines below that reference cwrapper.mod
-FILE(GLOB MultiNest_REMOVE cwrapper.f90)
-list(REMOVE_ITEM MultiNest_SOURCE ${MultiNest_REMOVE})
+# In previous versions of MultiNest (<3.8) the cwrapper.f90 file presented
+# some issues with older compilers, thus it was disabled by default. This
+# was fixed in r34, thus it is enabled by default now. Enable the following
+# two lines if it presents you with trouble.
+#FILE(GLOB MultiNest_REMOVE cwrapper.f90)
+#list(REMOVE_ITEM MultiNest_SOURCE ${MultiNest_REMOVE})
 
 # ============================
 # Build the non-MPI libraries:
