@@ -33,7 +33,7 @@ module Nested
   integer maxIter
   logical fback,resumeFlag,dlive,genLive,dino
   !output files name
-  character(LEN=100)physname,broot,rname,resumename,livename,evname,IS_Files(3)
+  character(LEN=1000)physname,broot,rname,resumename,livename,evname,IS_Files(3)
   !output file units
   integer u_ev,u_resume,u_phys,u_live,u_IS(3)
   double precision gZ,ginfo !total log(evidence) & info
