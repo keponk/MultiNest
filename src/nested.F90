@@ -56,7 +56,7 @@ contains
 	integer nest_ndims,nest_nlive,nest_updInt,context,seed,i
 	integer maxClst,nest_nsc,nest_totPar,nest_nCdims,nest_pWrap(*),nest_maxIter
 	logical nest_IS,nest_mmodal,nest_fb,nest_resume,nest_ceff,nest_outfile,initMPI
-	character(LEN=100) nest_root
+	character(LEN=1000) nest_root
 	double precision nest_tol,nest_ef,nest_Ztol,nest_logZero
 	
 	INTERFACE
@@ -255,7 +255,7 @@ contains
 	double precision, allocatable :: l(:) !log-likelihood
 	double precision vnow1!current vol
 	double precision ltmp(totPar+2)
-	character(len=100) fmt
+	character(len=1000) fmt
 	integer np,i,j,k,ios
 	logical flag
 
@@ -388,7 +388,7 @@ contains
     	double precision, allocatable :: pnewP(:,:), phyPnewP(:,:), lnewP(:)
     	double precision p(ndims,nlive+1), phyP(totPar,nlive+1), l(nlive+1)
     	integer id
-    	character(len=100) fmt,fmt2
+    	character(len=1000) fmt,fmt2
 #ifdef MPI
 	double precision, allocatable ::  tmpl(:), tmpp(:,:), tmpphyP(:,:)
 	integer q
@@ -662,8 +662,8 @@ contains
 	logical eswitch,peswitch,cSwitch !whether to do ellipsoidal sampling or not
 	logical remFlag, acpt, flag, flag2
 	integer funit1, funit2 !file units
-	character(len=100) fName1, fName2 !file names
-	character(len=100) fmt,fmt1
+	character(len=1000) fName1, fName2 !file names
+	character(len=1000) fmt,fmt1
 	
 	!diagnostics for determining when to do eigen analysis
 	integer neVol
