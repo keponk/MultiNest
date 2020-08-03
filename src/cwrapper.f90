@@ -114,11 +114,11 @@ module cnested
    	type(c_funptr),  intent(in), value :: loglike, dumper
 	type(c_ptr),     intent(in) :: context
 
-	character(len=100) :: fnest_root
+	character(len=1000) :: fnest_root
 	integer :: i, context_f
 
 	fnest_root = ' '
-	do i = 1, 100
+	do i = 1, 1000
 		if (nest_root(i) == C_NULL_CHAR) then
 			exit
 		else
