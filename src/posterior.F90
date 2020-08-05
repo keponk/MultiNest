@@ -25,7 +25,7 @@ contains
   	
 	double precision Ztol !null evidence
 	integer nIter !globff (total no. replacements)
-	character(LEN=100)root !base root
+	character(LEN=1000)root !base root
 	integer nLpt !no. of live points
 	integer ndim !dimensionality
 	integer nCdim !no. of parameters to cluster on
@@ -38,8 +38,8 @@ contains
 	logical IS !importance sampling?
 	double precision IS_Z(2) !importance sampling log(Z) estimate & its standard deviation
 	logical ic_reme(ic_n)
-  	character(len=100) evfile,livefile,postfile,resumefile
-      	character(len=100) sepFile,statsFile,postfile4,strictSepFile,summaryFile
+  	character(len=1000) evfile,livefile,postfile,resumefile
+      	character(len=1000) sepFile,statsFile,postfile4,strictSepFile,summaryFile
   	character(len=32) fmt,fmt2
       	logical l1
       	double precision d1,d2,urv
