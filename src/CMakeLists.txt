@@ -35,11 +35,14 @@ foreach(lang C CXX Fortran)
     if(CMAKE_${lang}_COMPILER_ID STREQUAL GNU)
         MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler flag.")
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none")
-        MESSAGE(STATUS "Detected gfortran, adding -w -fallow-argument-mismatch compiler flag.")
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fallow-argument-mismatch")
         break()
     endif()
 endforeach()
+
+if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10.0.0)
+    MESSAGE(STATUS "Detected gfortran-10+, adding -w -fallow-argument-mismatch compiler flag.")
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fallow-argument-mismatch")
+endif()
 
 # Emit a warning for gfortran < 4.3.6 and cwrapper.f90
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
