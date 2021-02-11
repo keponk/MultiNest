@@ -39,7 +39,7 @@ foreach(lang C CXX Fortran)
     endif()
 endforeach()
 
-if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10.0.0)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND ${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10.0.0)
     MESSAGE(STATUS "Detected gfortran-10+, adding -w -fallow-argument-mismatch compiler flag.")
     set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w -fallow-argument-mismatch")
 endif()
