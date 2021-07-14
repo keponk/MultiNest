@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8) 
+cmake_minimum_required(VERSION 2.8.12) 
 
 #=============================================================================
 # Copyright 2012 Brian Kloppenborg
@@ -35,6 +35,10 @@ foreach(lang C CXX Fortran)
     if(CMAKE_${lang}_COMPILER_ID STREQUAL GNU)
         MESSAGE(STATUS "Detected gfortran, adding -ffree-line-length-none compiler flag.")
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ffree-line-length-none")
+        if(CMAKE_${lang}_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+            MESSAGE(STATUS "Detected gfortran >= 10, adding -std=legacy compiler flag.")
+            set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -std=legacy")
+        endif()
         break()
     endif()
 endforeach()
